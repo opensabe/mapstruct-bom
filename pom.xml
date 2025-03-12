@@ -8,6 +8,10 @@
     <artifactId>mapstruct-bom</artifactId>
     <packaging>pom</packaging>
     <version>1.2.0</version>
+
+    <description>Automatic Object Attribute Setting Technology</description>
+    <url>https://mapstruct.org/</url>
+
     <modules>
         <module>mapstruct-core</module>
         <module>mapstruct-processor</module>
@@ -20,6 +24,7 @@
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <freemarker.version>2.3.34</freemarker.version>
     </properties>
+
 
 
     <licenses>
