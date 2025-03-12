@@ -1,7 +1,5 @@
 package io.github.opensabe.mapstruct.processor;
 
-import com.google.common.collect.Sets;
-import org.springframework.util.StringUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -39,7 +37,8 @@ public class MetaDataFactory {
 
         Set<AbstractMapper> createCommonMapper (String packageName, Element bean) {
             SelfMapper self = new SelfMapper(packageName, bean.toString(), bean.getSimpleName()+"Mapper", cycle);
-            Set<AbstractMapper> list = Sets.newHashSet(self);
+            Set<AbstractMapper> list = new HashSet<>();
+            list.add(self);
             if (values.isEmpty()) {
                 return list;
             }
@@ -47,7 +46,7 @@ public class MetaDataFactory {
             if (values.isEmpty()) {
                 return list;
             }
-            list.addAll(values.stream().filter(StringUtils::hasText).map(v -> {
+            list.addAll(values.stream().filter(this::isNotBlank).map(v -> {
                 String name = bean.getSimpleName()+v.substring(v.lastIndexOf(".")+1)+"Mapper";
                 return new CommonMapper(packageName, bean.toString(), name, v, cycle);
             }).toList());
@@ -58,6 +57,9 @@ public class MetaDataFactory {
             return new MapMapper(packageName, bean.toString(), bean.getSimpleName()+"MapMapper", cycle);
         }
 
+        boolean isNotBlank (String str) {
+            return str != null && !str.isEmpty();
+        }
 
 
         static List<BindRelation> resolveBinding (Elements elementUtils, List<? extends AnnotationMirror> binding) {

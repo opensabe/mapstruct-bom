@@ -5,6 +5,8 @@ import io.github.opensabe.mapstruct.core.Binding;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
  * 根据{@link Binding}注解，自动生成相应的Mapper
  * @author heng.ma
  */
+@SupportedSourceVersion(SourceVersion.RELEASE_21)
 @SupportedAnnotationTypes("io.github.opensabe.mapstruct.core.Binding")
 public class MapperGeneratorProcessor extends FreeMarkerProcessor {
 
