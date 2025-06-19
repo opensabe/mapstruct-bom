@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
     <version>1.3.0-SNAPSHOT</version>
 
-    <name>MapStruct</name>
+    <name>opensabe-mapstruct</name>
     <description>Automatic Object Attribute Setting Technology</description>
     <url>https://mapstruct.org/</url>
 
