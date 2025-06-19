@@ -8,6 +8,7 @@ import java.util.Set;
  * mapper ftl中元数据基类
  * @author heng.ma
  */
+@SuppressWarnings({"unused", "LombokGetterMayBeUsed"})
 public abstract class AbstractMapper {
 
     /**
@@ -95,7 +96,7 @@ public abstract class AbstractMapper {
 
     /**
      * 获取ftl模版
-     * @return
+     * @return 模板名称
      */
     String template() {
         return this.getClass().getSimpleName()+"Generator.ftl";
