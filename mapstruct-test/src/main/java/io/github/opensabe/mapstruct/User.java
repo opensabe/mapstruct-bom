@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Binding(value = Student.class)
+@Binding(value = Student.class, cycle = true)
 public class User {
     private String name;
 

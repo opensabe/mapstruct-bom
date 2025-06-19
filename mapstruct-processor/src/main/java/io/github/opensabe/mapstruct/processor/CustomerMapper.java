@@ -6,6 +6,7 @@ import java.util.Optional;
  * customer mapper meta info
  * @author heng.ma
  */
+@SuppressWarnings({"unused", "LombokGetterMayBeUsed"})
 public class CustomerMapper {
 
     private final String mapperClass;
@@ -56,4 +57,5 @@ public class CustomerMapper {
     public String getTarget() {
         return target;
     }
+
 }

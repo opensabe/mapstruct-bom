@@ -1,11 +1,9 @@
 package io.github.opensabe.mapstruct.processor;
 
 import io.github.opensabe.mapstruct.core.Binding;
+import io.github.opensabe.mapstruct.core.MapperRepository;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -32,22 +30,33 @@ public class MapperGeneratorProcessor extends FreeMarkerProcessor {
 
     private TypeMirror bindingMirror;
 
-    //保存已经创建过的mapper
-    static MapperRep mappers = new MapperRep();
+    private boolean hasBinding = true;
+
+    private Messager messager;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+        messager = processingEnv.getMessager();
         elementUtils = processingEnv.getElementUtils();
-        typeUtils = processingEnv.getTypeUtils();
-        bindingMirror = elementUtils.getTypeElement(Binding.class.getName()).asType();
+        TypeElement typeElement = elementUtils.getTypeElement(Binding.class.getName());
+        if (typeElement == null) {
+            hasBinding = false;
+        }else {
+            typeUtils = processingEnv.getTypeUtils();
+            bindingMirror = typeElement.asType();
+        }
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         //待创建的mapper，最后Processor结束以后清空
-
-        if (!roundEnv.processingOver()) {
+        if (!hasBinding) {
+            return false;
+        }
+        MapperRep mappers = new MapperRep();
+        if (!roundEnv.processingOver() && !annotations.isEmpty()) {
+            messager.printNote("---- resolve annotation [io.github.opensabe.mapstruct.core.Binding] ----------");
             Set<AbstractMapper> maps = new HashSet<>();
             for (TypeElement annotation : annotations) {
                 Set<? extends Element> beans = roundEnv.getElementsAnnotatedWith(annotation);
@@ -58,15 +67,18 @@ public class MapperGeneratorProcessor extends FreeMarkerProcessor {
                     maps.addAll(MetaDataFactory.create(elementUtils, bean, bindings));
                 }
             }
-            for (AbstractMapper mapper : maps) {
-                if (!mappers.contains(mapper)) {
-                    String className = mapper.getPackageName() + "." + mapper.getMapperName();
-                    writeClass(className, mapper.template(), mapper);
-                    mappers.add(mapper);
-                }
-            }
-        }else {
 
+
+            for (AbstractMapper mapper : maps) {
+                String className = mapper.getPackageName() + "." + mapper.getMapperName();
+                messager.printNote("[io.github.opensabe.mapstruct.core.Binding] mapper: [%s], sourceClass : [%s], targetClass : [%s] ".formatted(mapper.getMapperName(), mapper.getSourceClass(), mapper.getTargetClass()));
+                writeClass(className, mapper.template(), mapper);
+                mappers.add(mapper);
+            }
+
+            if (!mappers.isEmpty()) {
+                writeClass(MapperRepository.class.getName()+"Impl", MapperRepository.class.getSimpleName()+".ftl", mappers);
+            }
         }
         return false;
     }

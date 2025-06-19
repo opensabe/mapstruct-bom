@@ -12,6 +12,7 @@ public abstract class MapperRegister {
         this.repository = repository;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     protected void register (Class<?> source, Class<?> target, Object mapper) {
         if (mapper instanceof FromMapMapper map) {
             repository.register(target, map);

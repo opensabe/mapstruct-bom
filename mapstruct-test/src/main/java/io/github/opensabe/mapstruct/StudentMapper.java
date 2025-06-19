@@ -5,8 +5,7 @@ import io.github.opensabe.mapstruct.core.ObjectConverter;
 import io.github.opensabe.mapstruct.core.RegisterRepository;
 import org.mapstruct.Mapper;
 
-@Mapper(uses= ObjectConverter.class )
-@RegisterRepository("Job")
-public interface JobMapper extends FromMapMapper<Job> {
-
+@RegisterRepository("Student")
+@Mapper(uses = ObjectConverter.class)
+public interface StudentMapper extends FromMapMapper<Student> {
 }

@@ -5,10 +5,7 @@ import io.github.opensabe.mapstruct.core.FromMapMapper;
 import io.github.opensabe.mapstruct.core.MapperRegister;
 import org.mapstruct.Mapper;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -25,30 +22,43 @@ import java.util.Set;
 @SupportedAnnotationTypes("io.github.opensabe.mapstruct.core.RegisterRepository")
 public class CustomerRegisterProcessor extends FreeMarkerProcessor {
 
-    private final List<CustomerMapper> mappers = new ArrayList<>();
-
     private Types typeUtils;
 
     private Elements elementUtils;
 
     private TypeMirror commonMirror;
     private TypeMirror mapMirror;
+
+    private boolean hasBinding = true;
+
+    private Messager messager;
+
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+        messager = processingEnv.getMessager();
         typeUtils = processingEnv.getTypeUtils();
         elementUtils = processingEnv.getElementUtils();
-        commonMirror = typeUtils.erasure(elementUtils.getTypeElement(CommonCopyMapper.class.getName()).asType());
-        mapMirror = typeUtils.erasure(elementUtils.getTypeElement(FromMapMapper.class.getName()).asType());
+        TypeElement typeElement = elementUtils.getTypeElement(CommonCopyMapper.class.getName());
+        if (typeElement == null) {
+            hasBinding = false;
+        }else {
+            commonMirror = typeUtils.erasure(typeElement.asType());
+            mapMirror = typeUtils.erasure(elementUtils.getTypeElement(FromMapMapper.class.getName()).asType());
+        }
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
-        if (!roundEnv.processingOver()) {
+        if (!hasBinding) {
+            return false;
+        }
+        List<CustomerMapper> mappers = new ArrayList<>();
+        if (!roundEnv.processingOver() && !annotations.isEmpty()) {
             for (TypeElement annotation : annotations) {
-                Set<? extends Element> mappers = roundEnv.getElementsAnnotatedWith(annotation);
-                for (Element mapper : mappers) {
+                messager.printNote("------- resolve annotation [io.github.opensabe.mapstruct.core.RegisterRepository] -------------");
+                Set<? extends Element> set = roundEnv.getElementsAnnotatedWith(annotation);
+                for (Element mapper : set) {
                     if (hasMapperAnnotation(mapper)) {
                         if (mapper instanceof TypeElement typeElement) {
                             typeElement.getInterfaces().stream()
@@ -58,20 +68,22 @@ public class CustomerRegisterProcessor extends FreeMarkerProcessor {
                                     .ifPresent(m -> {
                                         List<? extends TypeMirror> arguments = ((DeclaredType) m).getTypeArguments();
                                         if (arguments.size() == 2) {
-                                            this.mappers.add(new CustomerMapper(mapper.toString(), arguments.get(0).toString(), arguments.get(1).toString()));
+                                            mappers.add(new CustomerMapper(mapper.toString(), arguments.getFirst().toString(), arguments.get(1).toString()));
                                         }else {
-                                            this.mappers.add(new CustomerMapper(mapper.toString(),null, arguments.get(0).toString()));
+                                            mappers.add(new CustomerMapper(mapper.toString(),null, arguments.getFirst().toString()));
                                         }
                                     });
                         }
                     }
                 }
             }
-        }else {
-            Element interfaceName = elementUtils.getTypeElement(MapperRegister.class.getName());
-            String className = interfaceName.toString() + "Impl";
-            writeClass(className, MapperRegister.class.getSimpleName()+".ftl", Map.of("mappers", this.mappers));
-            mappers.clear();
+            if (!mappers.isEmpty()) {
+                mappers.forEach(mapper -> messager.printNote("[io.github.opensabe.mapstruct.core.RegisterRepository] find mapper [%s]".formatted(mapper.getMapperClass())));
+                Element interfaceName = elementUtils.getTypeElement(MapperRegister.class.getName());
+                String className = interfaceName.toString() + "Impl";
+                writeClass(className, MapperRegister.class.getSimpleName()+".ftl", Map.of("mappers", mappers));
+            }
+
         }
         return false;
     }

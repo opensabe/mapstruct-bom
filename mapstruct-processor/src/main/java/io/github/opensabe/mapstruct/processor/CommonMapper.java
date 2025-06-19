@@ -4,6 +4,7 @@ package io.github.opensabe.mapstruct.processor;
  * source target绑定关系Mapper元数据
  * @author heng.ma
  */
+@SuppressWarnings("LombokGetterMayBeUsed")
 public class CommonMapper extends AbstractMapper {
 
     /**

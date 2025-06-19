@@ -7,7 +7,7 @@ import java.util.Set;
  * 保存已经生成过的Mapper
  * @author heng.ma
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "LombokGetterMayBeUsed"})
 public class MapperRep {
 
     private final Set<String> targetSource = new HashSet<>();
@@ -31,12 +31,13 @@ public class MapperRep {
     void add (AbstractMapper mapper) {
         targetSource.add(mapper.getSourceClass()+ mapper.getTargetClass());
 
-        if (mapper instanceof SelfMapper) {
-            self.add(new MapperPair(mapper.getMapperName(), mapper.getSourceName()));
-        }else if (mapper instanceof MapMapper) {
-            map.add(new MapperPair(mapper.getMapperName(), mapper.getSourceName()));
-        }else if (mapper instanceof CommonMapper commonMapper){
-            common.add(new MapperPair(commonMapper.getMapperName(), commonMapper.getSourceName(), commonMapper.getTargetName()));
+        switch (mapper) {
+            case SelfMapper selfMapper -> self.add(new MapperPair(mapper.getMapperName(), mapper.getSourceName()));
+            case MapMapper mapMapper -> map.add(new MapperPair(mapper.getMapperName(), mapper.getSourceName()));
+            case CommonMapper commonMapper ->
+                    common.add(new MapperPair(commonMapper.getMapperName(), commonMapper.getSourceName(), commonMapper.getTargetName()));
+            default -> {
+            }
         }
 
         //导入Mapper接口的包
@@ -58,6 +59,7 @@ public class MapperRep {
         return targetSource.contains(mapper.getSourceClass()+mapper.getTargetClass())
                 || targetSource.contains(mapper.getTargetClass()+mapper.getSourceClass());
     }
+
 
     public static class MapperPair  {
         private final String bean;
@@ -107,5 +109,9 @@ public class MapperRep {
         map.clear();
         self.clear();
         imports.clear();
+    }
+
+    public boolean isEmpty () {
+        return targetSource.isEmpty() && common.isEmpty() && map.isEmpty() && self.isEmpty() && imports.isEmpty();
     }
 }

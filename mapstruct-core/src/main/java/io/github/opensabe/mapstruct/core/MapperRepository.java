@@ -1,7 +1,5 @@
 package io.github.opensabe.mapstruct.core;
 
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * Mapper Repository, 保存所有的Mapper
  * <p>
