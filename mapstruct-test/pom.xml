@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>mapstruct-test</artifactId>
-
+    <name>${project.artifactId}</name>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <lombok.version>1.18.36</lombok.version>
