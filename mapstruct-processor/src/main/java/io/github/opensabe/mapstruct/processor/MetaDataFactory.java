@@ -18,7 +18,7 @@ public class MetaDataFactory {
 
 
     static Set<? extends AbstractMapper> create (Elements elementUtils, Element bean, List<? extends AnnotationMirror> binding) {
-        String packageName = elementUtils.getPackageOf(bean).toString()+".mapper";
+        String packageName = elementUtils.getPackageOf(bean).getQualifiedName().toString()+".mapper";
         Set<AbstractMapper> result = new HashSet<>();
         BindRelation relations = BindRelation.resolveBinding(elementUtils, binding).stream().reduce(reducer).orElseThrow();
         result.add(relations.createMapMapper(packageName, bean));
